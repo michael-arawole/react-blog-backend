@@ -27,7 +27,34 @@ class AuthCtrl extends DB {
 		if (password_verify($password, $account->password)) {
 			$response['status'] = true;
 			$response['message'] = "Login successful";
-			$response['data']['login_token'] = self::createSessionToken();
+			$response['data']['login_token'] = self::createSessionToken($account->id);
+		}
+		return $response;
+	}
+
+	public static function register(string $username, string $password): array {
+		$response['status'] = false;
+		$response['message'] = "Registration failed";
+
+		$account = (new DB(self::$tableName))
+			->where([
+				"username" => $username
+			])
+			->select();
+		if (!empty($account)) 
+			$response['message'] = "Username is already taken";
+			return $response;
+
+		$insertID = (new DB(self::$tableName))
+			->setColumnsAndValues([
+				"username" => $username,
+				"password" => $password,
+				"date_joined" => date('d-M-Y')
+			]);
+		if (!empty($insertID)) {
+			$response['status'] = true;
+			$response['message'] = "Registration successful";
+			$response['data']['login_token'] = self::createSessionToken($insertID);
 		}
 		return $response;
 	}

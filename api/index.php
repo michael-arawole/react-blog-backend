@@ -50,7 +50,38 @@ $app->post('/login', function (Request $request, Response $response, $args) {
         return errorResponse('Password is required', $response);
     }
 
-    $result = Auth::login($data->username, $data->password);
+    $result = AuthCtrl::login($data->username, $data->password);
+    $response_data['message'] = $result['message'];
+    if ($result['status'] === true) {
+        $response_data['error'] = false;
+        $response_data['message'] = 'success';
+        $response_data['data'] = $result['data'];
+        $response->getBody()->write(json_encode($response_data));
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(200);
+    } else {
+        $response->getBody()->write(json_encode($response_data));
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(500);
+    }
+    return $response;
+});
+
+// Register //
+$app->post('/register', function (Request $request, Response $response, $args) {
+    $response_data = defaultResponse();
+    
+    $data = cleanPostData($request->getParsedBody());
+    if (empty($data->username)) {
+        return errorResponse('Username is required', $response);
+    }
+    if (empty($data->password)) {
+        return errorResponse('Password is required', $response);
+    }
+
+    $result = AuthCtrl::register($data->username, $data->password);
     $response_data['message'] = $result['message'];
     if ($result['status'] === true) {
         $response_data['error'] = false;
@@ -144,7 +175,7 @@ $app->delete('/blogs/{id}', function (Request $request, Response $response, $arg
         $response->getBody()->write(json_encode($response_data));
         return $response
             ->withHeader('Content-type', 'application/json')
-            ->withStatus(400);
+            ->withStatus(500);
     }
     return $response;
 });
@@ -175,5 +206,5 @@ function errorResponse(string $errorMessage, Response $response): Response {
     $response->getBody()->write(json_encode($response_data));
     return $response
         ->withHeader('Content-type', 'application/json')
-        ->withStatus(200);
+        ->withStatus(400);
 }
