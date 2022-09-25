@@ -53,7 +53,6 @@ class AuthCtrl extends DB {
 				"date_joined" => date('d-M-Y')
 			])
 			->insert();
-
 		if (!empty($insertID)) {
 			$response['status'] = true;
 			$response['message'] = "Registration successful";

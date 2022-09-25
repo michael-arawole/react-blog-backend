@@ -39,7 +39,7 @@ $app->get('/', function (Request $request, Response $response, $args) {
 });
 
 // Login //
-$app->post('/login', function (Request $request, Response $response, $args) {
+$app->post('/login', function (Request $request, Response $response) {
     $response_data = defaultResponse();
     
     $data = cleanPostData($request->getParsedBody());
@@ -70,7 +70,7 @@ $app->post('/login', function (Request $request, Response $response, $args) {
 });
 
 // Register //
-$app->post('/register', function (Request $request, Response $response, $args) {
+$app->post('/register', function (Request $request, Response $response) {
     $response_data = defaultResponse();
     
     $data = cleanPostData($request->getParsedBody());
