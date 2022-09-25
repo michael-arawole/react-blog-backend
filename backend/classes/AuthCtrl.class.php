@@ -17,11 +17,31 @@ class AuthCtrl extends DB {
 		$response['status'] = false;
 		$response['message'] = "Login failed";
 
-		$db = (new DB(self::$tableName))
+		$account = (new DB(self::$tableName))
 			->where([
 				"username" => $username
 			])
 			->select();
+		if (empty($account)) return $response;
+
+		if (password_verify($password, $account->password)) {
+			$response['status'] = true;
+			$response['message'] = "Login successful";
+			$response['data']['login_token'] = self::createSessionToken();
+		}
 		return $response;
+	}
+
+	private static function createSessionToken(int $user_id):string {
+		$token = bin2hex(random_bytes(12));
+		(new DB(self::$tableName))
+			->setColumnsAndValues([
+				"user_id" => $user_id,
+				"token" => $token,
+				"time" => time(),
+				"expiry" => strtotime('+7 days')
+			])
+			->insert();
+		return $token;
 	}
 }
