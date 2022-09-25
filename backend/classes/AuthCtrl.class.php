@@ -41,16 +41,19 @@ class AuthCtrl extends DB {
 				"username" => $username
 			])
 			->select();
-		if (!empty($account)) 
+		if (!empty($account)) {
 			$response['message'] = "Username is already taken";
 			return $response;
+		}
 
 		$insertID = (new DB(self::$tableName))
 			->setColumnsAndValues([
 				"username" => $username,
-				"password" => $password,
+				"password" => password_hash($password, PASSWORD_DEFAULT),
 				"date_joined" => date('d-M-Y')
-			]);
+			])
+			->insert();
+
 		if (!empty($insertID)) {
 			$response['status'] = true;
 			$response['message'] = "Registration successful";
@@ -61,7 +64,7 @@ class AuthCtrl extends DB {
 
 	private static function createSessionToken(int $user_id):string {
 		$token = bin2hex(random_bytes(12));
-		(new DB(self::$tableName))
+		(new DB('account_sessions'))
 			->setColumnsAndValues([
 				"user_id" => $user_id,
 				"token" => $token,
