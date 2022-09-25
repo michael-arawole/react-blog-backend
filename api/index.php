@@ -41,7 +41,16 @@ $app->get('/', function (Request $request, Response $response, $args) {
 // Login //
 $app->post('/login', function (Request $request, Response $response, $args) {
     $response_data = defaultResponse();
-    $result = Auth::login(cleanPostData($request->getParsedBody()));
+    
+    $data = cleanPostData($request->getParsedBody());
+    if (empty($data->username)) {
+        return errorResponse('Username is required', $response);
+    }
+    if (empty($data->password)) {
+        return errorResponse('Password is required', $response);
+    }
+
+    $result = Auth::login($data->username, $data->password);
     $response_data['message'] = $result['message'];
     if ($result['status'] === true) {
         $response_data['error'] = false;
@@ -152,4 +161,19 @@ function cleanPostData($post_data) {
 
 function defaultResponse() {
     return ["error" => true, "message" => "Unknown error occurred"];
+}
+
+/**
+ * @param String $errorMessage
+ * @param Response $response
+ * @return Response
+ */
+function errorResponse(string $errorMessage, Response $response): Response {
+    $response_data = array();
+    $response_data['error'] = true;
+    $response_data['message'] = $errorMessage;
+    $response->getBody()->write(json_encode($response_data));
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(200);
 }
